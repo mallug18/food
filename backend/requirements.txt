@@ -2,5 +2,5 @@ Flask
 python-dotenv
 Flask-Cors
 PyJWT
-supabase-py
+supabase
 gunicorn
