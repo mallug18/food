@@ -1,0 +1,15 @@
+# /netlify.toml
+
+[build]
+  # This tells Netlify where to run the build commands from
+  base = "frontend"
+
+  # This is the command to build your Vue app
+  command = "npm run build"
+
+  # This is the folder that gets published after the build is complete
+  publish = "frontend/dist"
+
+[build.environment]
+  # This sets the Node.js version for the build environment
+  NODE_VERSION = "18"
