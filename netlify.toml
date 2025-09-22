@@ -1,4 +1,12 @@
 [build]
+  # The base directory must be lowercase
   base = "frontend"
+
+  # The build command is correct
   command = "npm run build"
-  publish = "frontend/dist"
+
+  # The publish directory should be 'dist' (relative to the base)
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
