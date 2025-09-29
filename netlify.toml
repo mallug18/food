@@ -1,18 +1,4 @@
-# /netlify.toml
-
-# This section tells Netlify exactly how to build your site
-[build]
-
-  # 1. Go into the 'frontend' folder first
-  base = "frontend"
-
-  # 2. Run the build command
-  command = "npm run build"
-
-  # 3. The final website will be in the 'dist' folder
-  #    (inside 'frontend')
-  publish = "dist"
-
-# This section sets the build environment
-[build.environment]
-  NODE_VERSION = "20"
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
