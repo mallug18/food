@@ -10,7 +10,7 @@ from supabase import create_client, Client
 load_dotenv()
 app = Flask(__name__)
 # This specific CORS configuration is crucial for it to work with your Vue app
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:5173"}})
+CORS(app, origins="https://myfooddonation.netlify.app")
 
 # --- SUPABASE CLIENT INITIALIZATION ---
 supabase_url = os.environ.get("SUPABASE_URL")
