@@ -53,8 +53,8 @@ const scrollToSection = (sectionId) => {
 
 <style scoped>
 /* Use the same professional styles from our previous conversation */
-header { background-color: white; color: #333; padding: 0 2rem; border-bottom: 1px solid #eee; }
-nav { display: flex; justify-content: space-between; align-items: center; height: 70px; max-width: 1200px; margin: 0 auto; }
+header { background-color: white; color: #333; padding: 0.5rem; border-bottom: 1px solid #eee; }
+nav { display: flex; justify-content: space-between; align-items: center; height: 70px; max-width: 1200px; margin:0.5px; }
 .logo { font-weight: bold; font-size: 1.5rem; text-decoration: none; color: #42b983; }
 .nav-links, .auth-links { display: flex; align-items: center; gap: 1.5rem; }
 .nav-links a, .auth-links a { color: #333; text-decoration: none; font-weight: 500; transition: color 0.3s; }
