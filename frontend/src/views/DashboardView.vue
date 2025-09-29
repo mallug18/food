@@ -47,13 +47,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { supabase } from '../supabase';
+import { supabase } from '../supabase'; // For authentication
+import apiClient from '@/api'; // <-- IMPORT THE API CLIENT
 
-const activeTab = ref('receive'); // Default to showing available food
+const activeTab = ref('receive');
 const isSubmitting = ref(false);
 const formMessage = ref('');
 const isSuccess = ref(false);
-const userSession = ref(null); // To store the logged-in user's session
+const userSession = ref(null);
 
 const form = ref({
   name: '',
@@ -65,7 +66,7 @@ const availableFood = ref([]);
 const loading = ref(true);
 const apiError = ref('');
 
-// --- DATA FETCHING AND SUBMITTING LOGIC ---
+// --- REFACTORED DATA LOGIC ---
 
 async function fetchAvailableFood() {
   loading.value = true;
@@ -74,14 +75,13 @@ async function fetchAvailableFood() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("You must be logged in to view food items.");
 
-    const response = await fetch('http://localhost:5000/api/food-items', {
+    const response = await apiClient.get('/api/food-items', {
       headers: { 'Authorization': `Bearer ${session.access_token}` },
     });
-    if (!response.ok) throw new Error("Failed to fetch food items.");
-
-    availableFood.value = await response.json();
+    
+    availableFood.value = response.data;
   } catch (error) {
-    apiError.value = error.message;
+    apiError.value = error.response?.data?.error || error.message;
   } finally {
     loading.value = false;
   }
@@ -95,63 +95,41 @@ async function handleShareFood() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("You must be logged in to share food.");
     
-    const response = await fetch('http://localhost:5000/api/food-items', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify(form.value),
+    await apiClient.post('/api/food-items', form.value, {
+      headers: { 'Authorization': `Bearer ${session.access_token}` },
     });
-
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to submit donation.");
-    }
     
     isSuccess.value = true;
     formMessage.value = "Thank you! Your donation has been listed successfully.";
-    form.value = { name: '', quantity: '', location: '' }; // Reset form
-    activeTab.value = 'receive'; // Switch to available food tab to see the new item
-    fetchAvailableFood(); // Refresh the list of available food
+    form.value = { name: '', quantity: '', location: '' };
+    activeTab.value = 'receive';
+    fetchAvailableFood();
   } catch (error) {
     isSuccess.value = false;
-    formMessage.value = error.message;
+    formMessage.value = error.response?.data?.error || error.message;
   } finally {
     isSubmitting.value = false;
   }
 }
-
-// --- NEW LOGIC FOR HANDLING FOOD REQUESTS ---
 
 async function handleRequestFood(item) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("You must be logged in to make a request.");
 
-    const response = await fetch('http://localhost:5000/api/requests', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({
-        food_item_id: item.id,
-        donor_id: item.donor_id
-      }),
+    const payload = {
+      food_item_id: item.id,
+      donor_id: item.donor_id
+    };
+    
+    await apiClient.post('/api/requests', payload, {
+      headers: { 'Authorization': `Bearer ${session.access_token}` },
     });
     
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to submit request.");
-    }
-    
     alert('Request sent successfully!');
-    // Refresh the list to update the item's status
     fetchAvailableFood();
-
   } catch (error) {
-    alert(error.message);
+    alert(error.response?.data?.error || error.message);
   }
 }
 
@@ -165,13 +143,9 @@ function getButtonText(item) {
   return "Request This Food";
 }
 
-// --- LIFECYCLE HOOK ---
-
 onMounted(async () => {
-  // Get the user session once when the component loads
   const { data } = await supabase.auth.getSession();
   userSession.value = data.session;
-  // Fetch the initial list of food
   fetchAvailableFood();
 });
 </script>

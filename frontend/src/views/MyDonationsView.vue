@@ -48,7 +48,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { supabase } from '../supabase';
+import { supabase } from '../supabase'; // We still need this for authentication
+import apiClient from '@/api'; // <-- 1. IMPORT THE CENTRAL API CLIENT
 
 const donations = ref([]);
 const loading = ref(true);
@@ -61,12 +62,13 @@ async function fetchMyDonations() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("You must be logged in.");
 
-    const response = await fetch('http://localhost:5000/api/my-donations', {
+    // 2. USE THE API CLIENT INSTEAD OF FETCH (GET REQUEST)
+    const response = await apiClient.get('/api/my-donations', {
       headers: { 'Authorization': `Bearer ${session.access_token}` },
     });
-    if (!response.ok) throw new Error("Failed to fetch your donations.");
     
-    donations.value = await response.json();
+    // With axios (used by apiClient), the JSON data is in `response.data`
+    donations.value = response.data;
   } catch (err) {
     error.value = err.message;
   } finally {
@@ -79,22 +81,18 @@ async function handleApproval(requestId) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error("Authentication error.");
 
-    const response = await fetch(`http://localhost:5000/api/requests/${requestId}/approve`, {
-      method: 'POST',
+    // 3. USE THE API CLIENT FOR THE POST REQUEST
+    await apiClient.post(`/api/requests/${requestId}/approve`, {}, { // POST data is the second argument
       headers: {
         'Authorization': `Bearer ${session.access_token}`,
       },
     });
     
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to approve request.");
-    }
-    
     alert('Request approved!');
-    fetchMyDonations();
+    fetchMyDonations(); // Refresh the list of donations
   } catch (err) {
-    alert(err.message);
+    // Axios provides more detailed error messages
+    alert(err.response?.data?.error || err.message);
   }
 }
 
