@@ -21,7 +21,7 @@
           <a href="#" @click.prevent="handleLogout" class="nav-button-outline">Logout</a>
         </template>
         <template v-else>
-          <RouterLink to="/login">Login</RouterLink>
+          <RouterLink to="/login" class="nav-button">Login</RouterLink>
           <RouterLink to="/register" class="nav-button">Register</RouterLink>
         </template>
       </div>
@@ -53,9 +53,9 @@ const scrollToSection = (sectionId) => {
 
 <style scoped>
 /* Use the same professional styles from our previous conversation */
-header { background-color: white; color: #333; padding: 0.5rem; border-bottom: 1px solid #eee; }
+header { background-color: rgba(118, 130, 107, 0.753); color: #ffffff; padding: 0.5rem; border-bottom: 1px solid #eee; }
 nav { display: flex; justify-content: space-between; align-items: center; height: 70px; max-width: 1200px; margin:0.5px; }
-.logo { font-weight: bold; font-size: 1.5rem; text-decoration: none; color: #42b983; }
+.logo { font-weight: bold; font-size: 1.5rem; text-decoration: none; color: #42b983; margin-left: 1rem; }
 .nav-links, .auth-links { display: flex; align-items: center; gap: 1.5rem; }
 .nav-links a, .auth-links a { color: #333; text-decoration: none; font-weight: 500; transition: color 0.3s; }
 .nav-links a:hover, .auth-links a:hover { color: #42b983; }
@@ -63,6 +63,7 @@ nav { display: flex; justify-content: space-between; align-items: center; height
 .nav-button {
   background-color: #42b983; color: white !important; padding: 8px 16px;
   border-radius: 5px; transition: background-color 0.3s;
+  align-items: flex-end;
 }
 .nav-button:hover { background-color: #36a473; }
 .nav-button-outline {

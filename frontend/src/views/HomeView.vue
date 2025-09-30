@@ -1,6 +1,6 @@
 <template>
   <div class="home-page">
-    <section id="home" class="hero-section">
+    <section id="home" class="hero-section" :style="heroStyle">
       <div class="hero-content">
         <h1>Reduce Waste, Share Abundance</h1>
         <p>Connect with your community to share surplus food and fight hunger. Your small contribution can make a big difference.</p>
@@ -23,7 +23,7 @@
     </section>
 
     <section id="contact" class="content-section-dark">
-       <div class="section-container">
+        <div class="section-container">
         <h2>Get In Touch</h2>
         <p>Have questions or want to partner with us? We’d love to hear from you.</p>
         <div class="contact-info">
@@ -36,13 +36,54 @@
 </template>
 
 <script setup>
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { RouterLink } from 'vue-router';
+
+// --- START: New code for slideshow ---
+
+// 1. Define your list of images
+// Replace these placeholders with your actual image URLs
+const backgroundImages = ref([
+  'https://images7.alphacoders.com/110/1103153.jpg',
+  'https://images.squarespace-cdn.com/content/v1/669a8576009c437dabc4d36c/e1d15f4f-7a66-416b-8c83-68174a947d14/scraping-food-into-bin.jpeg',
+  'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiKfcDfTZJVfY2vZ7hdh0E9Uu07e4GxuDLkyXEmzgKNpIxuh84OhR47DHGETCh0jKOIIzWUCMZy3V3q8-UxwZZZ4iLixTHyiyJAYeypznXB7AX21EUEY-sQtpTvns1TpxwkQq1gzy3BWUfL/s0/stop-food-waste-day-rich-poor-hungry.jpg'
+]);
+
+const currentImageIndex = ref(0);
+let intervalId = null;
+
+// 2. Create a computed property for the dynamic style
+const heroStyle = computed(() => ({
+  backgroundImage: `
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+    url('${backgroundImages.value[currentImageIndex.value]}')
+  `
+}));
+
+// 3. Use lifecycle hooks to start and stop the slideshow
+onMounted(() => {
+  // Start the slideshow every 2 seconds (2000 milliseconds)
+  intervalId = setInterval(() => {
+    currentImageIndex.value = (currentImageIndex.value + 1) % backgroundImages.value.length;
+  }, 2000);
+});
+
+onUnmounted(() => {
+  // Important: Clear the interval when the component is no longer on the page
+  clearInterval(intervalId);
+});
+
+// --- END: New code for slideshow ---
+
 </script>
 
 <style scoped>
 .hero-section {
   text-align: center; padding: 4rem 1rem;
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://placehold.co/1920x1080/444/FFF?text=Food+Donation');
+  /* The 'background' property is now handled by the :style binding in the template.
+    We add a transition for a smooth fade effect between images.
+  */
+  transition: background-image 2s ease-in-out;
   background-size: cover; background-position: center; color: white;
 }
 .hero-content h1 { font-size: 2.5rem; margin-bottom: 1rem; }
