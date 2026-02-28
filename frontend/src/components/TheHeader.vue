@@ -318,19 +318,26 @@ header.scrolled {
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(10, 15, 30, 0.97);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding: 1.5rem;
+  background: rgba(10, 15, 30, 0.98);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  padding: 2rem 1.5rem;
   border-bottom: 1px solid rgba(255,255,255,0.08);
-  transform: translateY(-110%);
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s;
   position: absolute;
   top: 72px;
   left: 0;
   right: 0;
+  height: max-content;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
 }
-.mobile-menu.is-open { transform: translateY(0); }
+.mobile-menu.is-open { transform: translateY(0); opacity: 1; pointer-events: auto; visibility: visible; }
 
 .mobile-menu a {
   color: rgba(248, 250, 252, 0.85);
