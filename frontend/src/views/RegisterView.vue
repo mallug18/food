@@ -23,7 +23,7 @@
     <div class="auth-right">
       <div class="auth-form-card">
         <div class="form-header">
-          <RouterLink to="/" class="form-logo">🌿 WasteFood</RouterLink>
+          <RouterLink to="/" class="form-logo"><img src="/favicon.png" alt="Logo" style="width: 24px; height: 24px; margin-right: 8px; vertical-align: middle;" />WasteFood</RouterLink>
           <h1>Create Account</h1>
           <p>Free to join. Start making a difference today.</p>
         </div>

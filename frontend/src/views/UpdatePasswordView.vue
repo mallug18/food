@@ -17,7 +17,7 @@
     <div class="auth-right">
       <div class="auth-form-card">
         <div class="form-header">
-          <RouterLink to="/" class="form-logo">🌿 WasteFood</RouterLink>
+          <RouterLink to="/" class="form-logo"><img src="/favicon.png" alt="Logo" style="width: 24px; height: 24px; margin-right: 8px; vertical-align: middle;" />WasteFood</RouterLink>
           <h1>Update Password</h1>
           <p>Enter your new password to regain access to your account.</p>
         </div>

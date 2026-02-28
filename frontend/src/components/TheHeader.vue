@@ -3,7 +3,7 @@
     <nav class="nav-inner">
       <!-- Logo -->
       <RouterLink to="/" class="logo">
-        <span class="logo-icon">🌿</span>
+        <img src="/favicon.png" alt="WasteFood Logo" class="logo-icon" />
         <span class="logo-text">Waste<span class="logo-accent">Food</span></span>
       </RouterLink>
 
@@ -130,7 +130,7 @@ header {
 
 /* Transparent state */
 header:not(.scrolled) {
-  background:rgba(0, 128, 0, 0.301);
+  background:rgba(6, 2, 44, 0.347);
 }
 
 /* Scrolled → glassmorphism */
@@ -163,7 +163,7 @@ header.scrolled {
   transition: transform 0.3s ease;
 }
 .logo:hover { transform: scale(1.05); }
-.logo-icon { font-size: 1.5rem; }
+.logo-icon { width: 32px; height: 32px; object-fit: contain; }
 .logo-text { color: #f8fafc; }
 .logo-accent {
   background: linear-gradient(135deg, #10b981, #34d399);
@@ -253,7 +253,7 @@ header.scrolled {
   border-radius: 8px;
   transition: all 0.3s ease;
 }
-.btn-nav-ghost:hover { color: #fff !important; background: rgba(255,255,255,0.08); }
+.btn-nav-ghost:hover { color: #1ad52198 !important; background: rgba(255,255,255,0.08); }
 
 .btn-nav-solid {
   color: #fff !important;
@@ -264,7 +264,7 @@ header.scrolled {
   background: linear-gradient(135deg, #10b981, #059669);
   border-radius: 9999px;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+  box-shadow: 0 40px 150px rgba(16, 185, 129, 0.3);
 }
 .btn-nav-solid:hover {
   transform: translateY(-2px);
@@ -277,7 +277,7 @@ header.scrolled {
   font-weight: 500;
   font-size: 0.9rem;
   padding: 0.5rem 1rem;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(5, 75, 14, 0.603);
   border-radius: 8px;
   transition: all 0.3s ease;
 }

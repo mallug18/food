@@ -7,7 +7,7 @@
         <div class="auth-illustration">
           <div class="illus-orb illus-orb-1"></div>
           <div class="illus-orb illus-orb-2"></div>
-          <div class="illus-icon">🌿</div>
+          <div class="illus-icon"><img src="/favicon.png" alt="Logo" style="width: 48px; height: 48px; object-fit: contain;" /></div>
           <h2>Welcome back!</h2>
           <p>Log in to share food, request donations, and track your impact in the community.</p>
           <div class="auth-stats">
@@ -22,7 +22,7 @@
     <div class="auth-right">
       <div class="auth-form-card">
         <div class="form-header">
-          <RouterLink to="/" class="form-logo">🌿 WasteFood</RouterLink>
+          <RouterLink to="/" class="form-logo"><img src="/favicon.png" alt="Logo" style="width: 24px; height: 24px; margin-right: 8px; vertical-align: middle;" />WasteFood</RouterLink>
           <h1>Sign In</h1>
           <p>Continue your mission to reduce food waste</p>
         </div>

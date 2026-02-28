@@ -11,7 +11,7 @@
       <div class="footer-grid">
         <!-- Brand -->
         <div class="footer-brand">
-          <div class="footer-logo">🌿 Waste<span>Food</span></div>
+          <div class="footer-logo"><img src="/favicon.png" alt="Logo" style="width: 24px; height: 24px; margin-right: 8px; vertical-align: middle;" />Waste<span>Food</span></div>
           <p>Connecting communities, reducing waste, fighting hunger — one meal at a time.</p>
           <div class="social-links">
             <a href="#" aria-label="Twitter" class="social-btn">𝕏</a>
