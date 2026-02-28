@@ -485,7 +485,7 @@ onUnmounted(() => clearInterval(slideInterval));
 .step-card:hover { transform: translateY(-8px); box-shadow: 0 20px 48px rgba(0,0,0,0.1); border-color: rgba(16,185,129,0.3); }
 .step-number {
   position: absolute;
-  top: -14px;
+  top: 0px;
   right: 20px;
   font-size: 3rem;
   font-weight: 900;
