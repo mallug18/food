@@ -4,11 +4,11 @@ import { supabase } from '../supabase';
 const userSession = ref(null);
 
 export function useAuth() {
-  
+
   supabase.auth.onAuthStateChange((event, session) => {
     userSession.value = session;
   });
-  
+
   const signUp = async (email, password, username) => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -34,10 +34,26 @@ export function useAuth() {
     if (error) throw error;
   };
 
+  const resetPassword = async (email) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/update-password`,
+    });
+    if (error) throw error;
+  };
+
+  const updatePassword = async (newPassword) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+    if (error) throw error;
+  };
+
   return {
     userSession,
     signUp,
     signIn,
     signOut,
+    resetPassword,
+    updatePassword,
   };
 }

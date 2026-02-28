@@ -118,5 +118,23 @@ def approve_request(request_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Public health check endpoint — no auth required."""
+    return jsonify({"status": "ok", "message": "WasteFood API is running"}), 200
+
+@app.route('/api/stats', methods=['GET'])
+def get_public_stats():
+    """Return public platform stats for the home page."""
+    try:
+        food_resp = supabase.table('food_items').select('id', count='exact').execute()
+        requests_resp = supabase.table('requests').select('id', count='exact').execute()
+        return jsonify({
+            "total_donations": food_resp.count or 0,
+            "total_requests": requests_resp.count or 0,
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)

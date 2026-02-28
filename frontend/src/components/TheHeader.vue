@@ -1,15 +1,19 @@
 <template>
-  <header>
-    <nav>
-      <RouterLink to="/" class="logo">WasteFood</RouterLink>
+  <header :class="{ 'scrolled': isScrolled }">
+    <nav class="nav-inner">
+      <!-- Logo -->
+      <RouterLink to="/" class="logo">
+        <span class="logo-icon">🌿</span>
+        <span class="logo-text">Waste<span class="logo-accent">Food</span></span>
+      </RouterLink>
 
+      <!-- Desktop Nav -->
       <div class="desktop-nav">
         <div v-if="!userSession" class="nav-links">
           <a href="/#home" @click.prevent="scrollToSection('home')">Home</a>
           <a href="/#about" @click.prevent="scrollToSection('about')">About Us</a>
           <a href="/#contact" @click.prevent="scrollToSection('contact')">Contact</a>
         </div>
-        
         <div v-else class="nav-links">
           <RouterLink to="/dashboard">Dashboard</RouterLink>
           <RouterLink to="/my-donations">My Donations</RouterLink>
@@ -17,42 +21,48 @@
 
         <div class="auth-links">
           <template v-if="userSession">
-            <a href="#" @click.prevent="handleLogout" class="nav-button-outline">Logout</a>
+            <div class="user-pill">
+              <span class="user-dot"></span>
+              <span>{{ userEmail }}</span>
+            </div>
+            <a href="#" @click.prevent="handleLogout" class="btn-nav-outline">Logout</a>
           </template>
           <template v-else>
-            <RouterLink to="/login" class="nav-button">Login</RouterLink>
-            <RouterLink to="/register" class="nav-button">Register</RouterLink>
+            <RouterLink to="/login" class="btn-nav-ghost">Login</RouterLink>
+            <RouterLink to="/register" class="btn-nav-solid">Get Started</RouterLink>
           </template>
         </div>
       </div>
 
-      <button class="hamburger-menu" @click="toggleMobileMenu" aria-label="Open navigation menu">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
+      <!-- Hamburger -->
+      <button
+        class="hamburger"
+        :class="{ 'is-open': isMobileMenuOpen }"
+        @click="toggleMobileMenu"
+        aria-label="Toggle navigation"
+      >
+        <span></span><span></span><span></span>
       </button>
     </nav>
 
-    <div class="mobile-nav-menu" :class="{ 'is-open': isMobileMenuOpen }">
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" :class="{ 'is-open': isMobileMenuOpen }">
       <template v-if="!userSession">
         <a href="/#home" @click.prevent="closeMenuAndScrollTo('home')">Home</a>
         <a href="/#about" @click.prevent="closeMenuAndScrollTo('about')">About Us</a>
         <a href="/#contact" @click.prevent="closeMenuAndScrollTo('contact')">Contact</a>
       </template>
-      
       <template v-else>
         <RouterLink to="/dashboard" @click="closeMobileMenu">Dashboard</RouterLink>
         <RouterLink to="/my-donations" @click="closeMobileMenu">My Donations</RouterLink>
       </template>
-
-      <hr class="menu-divider" />
-      <div class="mobile-auth-links">
+      <div class="mobile-auth">
         <template v-if="userSession">
-          <a href="#" @click.prevent="handleLogout" class="nav-button-outline">Logout</a>
+          <a href="#" @click.prevent="handleLogout" class="btn-nav-outline" style="width:100%;text-align:center;">Logout</a>
         </template>
         <template v-else>
-          <RouterLink to="/login" class="nav-button" @click="closeMobileMenu">Login</RouterLink>
-          <RouterLink to="/register" class="nav-button" @click="closeMobileMenu">Register</RouterLink>
+          <RouterLink to="/login" class="btn-nav-ghost" @click="closeMobileMenu">Login</RouterLink>
+          <RouterLink to="/register" class="btn-nav-solid" @click="closeMobileMenu">Get Started</RouterLink>
         </template>
       </div>
     </div>
@@ -60,23 +70,31 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useAuth } from '../stores/auth';
 
 const { userSession, signOut } = useAuth();
 const router = useRouter();
 
-// --- NEW: State for mobile menu ---
 const isMobileMenuOpen = ref(false);
+const isScrolled = ref(false);
 
-const toggleMobileMenu = () => {
-  isMobileMenuOpen.value = !isMobileMenuOpen.value;
+const userEmail = computed(() => {
+  if (!userSession.value) return '';
+  const email = userSession.value.user?.email || '';
+  return email.split('@')[0];
+});
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 20;
 };
 
-const closeMobileMenu = () => {
-  isMobileMenuOpen.value = false;
-};
+onMounted(() => window.addEventListener('scroll', handleScroll));
+onUnmounted(() => window.removeEventListener('scroll', handleScroll));
+
+const toggleMobileMenu = () => { isMobileMenuOpen.value = !isMobileMenuOpen.value; };
+const closeMobileMenu = () => { isMobileMenuOpen.value = false; };
 
 const handleLogout = async () => {
   closeMobileMenu();
@@ -101,166 +119,246 @@ const closeMenuAndScrollTo = (sectionId) => {
 
 <style scoped>
 header {
-  background-color: white; /* Changed for better contrast with menu */
-  color: #333;
-  border-bottom: 1px solid #eee;
-  padding: 0.5rem 0;
-  position: relative; /* Needed for absolute positioning of mobile menu */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  transition: all 0.4s ease;
+  padding: 0;
 }
 
-nav {
+/* Transparent state */
+header:not(.scrolled) {
+  background: transparent;
+}
+
+/* Scrolled → glassmorphism */
+header.scrolled {
+  background: rgba(10, 15, 30, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
+.nav-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 70px;
-  max-width: 1100px;
+  height: 72px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 1.5rem;
 }
 
+/* Logo */
 .logo {
-  font-weight: bold;
-  font-size: 1.5rem;
-  text-decoration: none;
-  color: #42b983;
-  margin-left: 0;
-}
-
-/* --- Wrapper for all desktop navigation links --- */
-.desktop-nav {
-  display: none; /* Hidden by default, shown on desktop */
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.nav-links, .auth-links {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0.5rem;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 1.4rem;
+  transition: transform 0.3s ease;
+}
+.logo:hover { transform: scale(1.05); }
+.logo-icon { font-size: 1.5rem; }
+.logo-text { color: #f8fafc; }
+.logo-accent {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.nav-links a, .auth-links a {
-  color: #333;
+/* Desktop nav */
+.desktop-nav {
+  display: none;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.nav-links a {
+  color: rgba(248, 250, 252, 0.85);
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.3s;
+  font-size: 0.95rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  position: relative;
+  transition: color 0.3s ease, background 0.3s ease;
 }
 
-.nav-links a:hover, .auth-links a:hover {
-  color: #42b983;
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #10b981;
+  border-radius: 2px;
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
 }
 
-.nav-links .router-link-exact-active {
-  color: #42b983;
-  border-bottom: 2px solid #42b983;
+.nav-links a:hover { color: #fff; }
+.nav-links a:hover::after { width: 70%; }
+.nav-links .router-link-exact-active { color: #10b981; }
+.nav-links .router-link-exact-active::after { width: 70%; }
+
+/* Auth links */
+.auth-links {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.nav-button {
-  background-color: #42b983;
-  color: white !important;
-  padding: 8px 16px;
-  border-radius: 5px;
-  transition: background-color 0.3s;
-  text-align: center;
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 9999px;
+  color: #10b981;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.user-dot {
+  width: 6px; height: 6px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: breathe 2s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
 }
 
-.nav-button:hover {
-  background-color: #36a473;
+.btn-nav-ghost {
+  color: rgba(248, 250, 252, 0.85) !important;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+.btn-nav-ghost:hover { color: #fff !important; background: rgba(255,255,255,0.08); }
+
+.btn-nav-solid {
+  color: #fff !important;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.55rem 1.25rem;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+.btn-nav-solid:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.45);
 }
 
-.nav-button-outline {
-  background-color: transparent;
-  color: #333 !important;
-  padding: 7px 15px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  text-align: center;
+.btn-nav-outline {
+  color: rgba(248, 250, 252, 0.85) !important;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+.btn-nav-outline:hover {
+  border-color: rgba(255,255,255,0.5);
+  background: rgba(255,255,255,0.08);
 }
 
-/* --- Hamburger Menu Styles --- */
-.hamburger-menu {
+/* Hamburger */
+.hamburger {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
-  width: 2rem;
-  height: 2rem;
+  width: 28px;
+  height: 22px;
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 0;
   z-index: 10;
 }
-
-.hamburger-menu:focus {
-  outline: none;
+.hamburger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: #f8fafc;
+  border-radius: 2px;
+  transition: all 0.35s cubic-bezier(0.645, 0.045, 0.355, 1);
+  transform-origin: center;
 }
+.hamburger.is-open span:nth-child(1) { transform: translateY(10px) rotate(45deg); }
+.hamburger.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger.is-open span:nth-child(3) { transform: translateY(-10px) rotate(-45deg); }
 
-.hamburger-menu .bar {
-  width: 2rem;
-  height: 0.25rem;
-  background: #333;
-  border-radius: 10px;
-  transition: all 0.3s linear;
-}
-
-/* --- Mobile Menu Styles --- */
-.mobile-nav-menu {
+/* Mobile Menu */
+.mobile-menu {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  background: white;
+  gap: 0.5rem;
+  background: rgba(10, 15, 30, 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  transform: translateY(-110%);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
   position: absolute;
-  top: 80px; /* Height of the header */
+  top: 72px;
   left: 0;
-  width: 100%;
-  padding: 1.5rem 0;
-  border-bottom: 1px solid #eee;
-  transform: translateY(-150%); /* Start off-screen */
-  transition: transform 0.3s ease-in-out;
-  opacity: 0;
+  right: 0;
 }
+.mobile-menu.is-open { transform: translateY(0); }
 
-.mobile-nav-menu.is-open {
-  transform: translateY(0); /* Slide into view */
-  opacity: 1;
-}
-
-.mobile-nav-menu a {
-  color: #333;
+.mobile-menu a {
+  color: rgba(248, 250, 252, 0.85);
   text-decoration: none;
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  width: 100%;
+  text-align: center;
+  border-radius: 8px;
+  transition: background 0.2s, color 0.2s;
 }
+.mobile-menu a:hover { background: rgba(255,255,255,0.07); color: #fff; }
 
-.menu-divider {
-  width: 80%;
-  border: 0;
-  border-top: 1px solid #eee;
-  margin: 0.5rem 0;
-}
-.mobile-auth-links {
+.mobile-auth {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  width: 100%;
+  justify-content: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
 
-
-/* --- DESKTOP STYLES (Breakpoint at 769px) --- */
-@media (min-width: 769px) {
-  nav {
-    padding: 0 2rem;
-  }
-  
-  .desktop-nav {
-    display: flex; /* Show desktop nav container */
-  }
-
-  .hamburger-menu {
-    display: none; /* Hide hamburger on desktop */
-  }
-  
-  .mobile-nav-menu {
-    display: none; /* Hide mobile menu on desktop */
-  }
+/* Desktop breakpoint */
+@media (min-width: 768px) {
+  .desktop-nav { display: flex; }
+  .hamburger { display: none; }
+  .mobile-menu { display: none !important; }
 }
 </style>

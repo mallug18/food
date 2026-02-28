@@ -11,6 +11,8 @@ const router = createRouter({
     { path: '/contact', name: 'contact', component: () => import('../views/ContactView.vue') },
     { path: '/login', name: 'login', component: () => import('../views/LoginView.vue') },
     { path: '/register', name: 'register', component: () => import('../views/RegisterView.vue') },
+    { path: '/forgot-password', name: 'forgot-password', component: () => import('../views/ForgotPasswordView.vue') },
+    { path: '/update-password', name: 'update-password', component: () => import('../views/UpdatePasswordView.vue') },
     {
       path: '/dashboard',
       name: 'dashboard',
