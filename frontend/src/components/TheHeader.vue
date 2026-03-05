@@ -16,16 +16,48 @@
         </div>
         <div v-else class="nav-links">
           <RouterLink to="/dashboard">Dashboard</RouterLink>
+          <RouterLink to="/requests" class="nav-item-with-badge">
+            Requests <span v-if="pendingRequestsCount > 0" class="badge-dot"></span>
+          </RouterLink>
           <RouterLink to="/my-donations">My Donations</RouterLink>
         </div>
 
         <div class="auth-links">
           <template v-if="userSession">
-            <div class="user-pill">
-              <span class="user-dot"></span>
-              <span>{{ userEmail }}</span>
+            <div class="user-dropdown-container">
+              <div class="user-pill" @click="toggleProfileDropdown">
+                <img v-if="userProfilePic" :src="userProfilePic" class="nav-profile-pic" />
+                <div v-else class="nav-profile-pic-placeholder">
+                  {{ getInitial(userEmail) }}
+                </div>
+              </div>
+
+              <!-- Dropdown Menu -->
+              <Transition name="dropdown-fade">
+                <div v-if="isProfileDropdownOpen" class="profile-dropdown" v-click-outside="closeProfileDropdown">
+                  <div class="dropdown-header">
+                    <strong>{{ userFullName || 'User' }}</strong>
+                    <span>{{ userSession.user.email }}</span>
+                  </div>
+                  <div class="dropdown-body">
+                    <RouterLink to="/dashboard" @click="closeProfileDropdown">
+                      <span class="dd-icon">❖</span> Dashboard
+                    </RouterLink>
+                    <RouterLink to="/profile-settings" @click="closeProfileDropdown">
+                      <span class="dd-icon">👤</span> Profile Settings
+                    </RouterLink>
+                    <RouterLink to="/update-password" @click="closeProfileDropdown">
+                      <span class="dd-icon">🔑</span> Reset Password
+                    </RouterLink>
+                  </div>
+                  <div class="dropdown-footer">
+                    <a href="#" @click.prevent="handleLogout" class="logout-link">
+                      <span class="dd-icon">🚪</span> Logout
+                    </a>
+                  </div>
+                </div>
+              </Transition>
             </div>
-            <a href="#" @click.prevent="handleLogout" class="btn-nav-outline">Logout</a>
           </template>
           <template v-else>
             <RouterLink to="/login" class="btn-nav-ghost">Login</RouterLink>
@@ -54,7 +86,11 @@
       </template>
       <template v-else>
         <RouterLink to="/dashboard" @click="closeMobileMenu">Dashboard</RouterLink>
+        <RouterLink to="/requests" @click="closeMobileMenu" class="nav-item-mobile-badge">
+          Requests <span v-if="pendingRequestsCount > 0" class="badge-dot-mobile">{{ pendingRequestsCount }}</span>
+        </RouterLink>
         <RouterLink to="/my-donations" @click="closeMobileMenu">My Donations</RouterLink>
+        <RouterLink to="/profile-settings" @click="closeMobileMenu">Profile Settings</RouterLink>
       </template>
       <div class="mobile-auth">
         <template v-if="userSession">
@@ -73,12 +109,17 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useAuth } from '../stores/auth';
+import { supabase } from '../supabase';
+import apiClient from '@/api';
 
 const { userSession, signOut } = useAuth();
 const router = useRouter();
 
 const isMobileMenuOpen = ref(false);
 const isScrolled = ref(false);
+const isProfileDropdownOpen = ref(false);
+const userFullName = ref('');
+const pendingRequestsCount = ref(0);
 
 const userEmail = computed(() => {
   if (!userSession.value) return '';
@@ -86,12 +127,78 @@ const userEmail = computed(() => {
   return email.split('@')[0];
 });
 
+const userProfilePic = computed(() => {
+  return userSession.value?.user?.user_metadata?.avatar_url || null;
+});
+
+const getInitial = (name) => {
+  return name ? name.charAt(0).toUpperCase() : 'U';
+};
+
+const fetchUserProfile = async () => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const response = await apiClient.get('/api/profile', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      userFullName.value = response.data.username;
+    }
+  } catch (error) {
+    console.error("Failed to fetch full name:", error);
+  }
+};
+
+const fetchPendingRequestsCount = async () => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      const response = await apiClient.get('/api/incoming-requests', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      pendingRequestsCount.value = response.data.filter(req => req.status === 'pending').length;
+    }
+  } catch (error) {
+    console.error("Failed to fetch pending requests:", error);
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll);
+  if (userSession.value) {
+    fetchUserProfile();
+    fetchPendingRequestsCount();
+  }
+  // Listen for request approvals to update count
+  window.addEventListener('request-approved', fetchPendingRequestsCount);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+  window.removeEventListener('request-approved', fetchPendingRequestsCount);
+});
+
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 20;
 };
 
-onMounted(() => window.addEventListener('scroll', handleScroll));
-onUnmounted(() => window.removeEventListener('scroll', handleScroll));
+const toggleProfileDropdown = () => { isProfileDropdownOpen.value = !isProfileDropdownOpen.value; };
+const closeProfileDropdown = () => { isProfileDropdownOpen.value = false; };
+
+// Click outside directive (simplified)
+const vClickOutside = {
+  mounted: (el, binding) => {
+    el.clickOutsideEvent = event => {
+      if (!(el == event.target || el.contains(event.target) || event.target.closest('.user-pill'))) {
+        binding.value();
+      }
+    };
+    document.body.addEventListener('click', el.clickOutsideEvent);
+  },
+  unmounted: el => {
+    document.body.removeEventListener('click', el.clickOutsideEvent);
+  },
+};
 
 const toggleMobileMenu = () => { isMobileMenuOpen.value = !isMobileMenuOpen.value; };
 const closeMobileMenu = () => { isMobileMenuOpen.value = false; };
@@ -196,6 +303,41 @@ header.scrolled {
   transition: color 0.3s ease, background 0.3s ease;
 }
 
+.nav-item-with-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.badge-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+  animation: pulse 2s infinite;
+}
+
+.nav-item-mobile-badge {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.badge-dot-mobile {
+  background-color: #ef4444;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: bold;
+  padding: 0.1rem 0.5rem;
+  border-radius: 9999px;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
 .nav-links a::after {
   content: '';
   position: absolute;
@@ -221,28 +363,77 @@ header.scrolled {
   gap: 0.75rem;
 }
 
+.user-dropdown-container {
+  position: relative;
+}
+
 .user-pill {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.4rem 0.85rem;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 9999px;
-  color: #10b981;
-  font-size: 0.85rem;
-  font-weight: 500;
+  padding: 0.25rem 0.6rem 0.25rem 0.25rem;
+  cursor: pointer;
 }
-.user-dot {
-  width: 6px; height: 6px;
-  background: #10b981;
-  border-radius: 50%;
-  animation: breathe 2s ease-in-out infinite;
+.nav-profile-pic {
+  width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+  border: 2px solid transparent; transition: all 0.2s;
 }
-@keyframes breathe {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.7); }
+.nav-profile-pic:hover, .user-pill:hover .nav-profile-pic { border-color: #3b82f6; transform: scale(1.05); }
+.nav-profile-pic-placeholder {
+  width: 36px; height: 36px; border-radius: 50%; background: #2563eb;
+  color: white; display: flex; align-items: center; justify-content: center;
+  font-weight: bold; transition: all 0.2s;
 }
+.user-pill:hover .nav-profile-pic-placeholder { background: #1d4ed8; transform: scale(1.05); }
+
+/* Dropdown styling */
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 240px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.dropdown-fade-enter-active, .dropdown-fade-leave-active { transition: all 0.2s ease; }
+.dropdown-fade-enter-from, .dropdown-fade-leave-to { opacity: 0; transform: translateY(-10px); }
+
+.dropdown-header {
+  padding: 1rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #f1f5f9;
+}
+.dropdown-header strong { display: block; color: #0f172a; font-size: 0.95rem; margin-bottom: 0.1rem; }
+.dropdown-header span { color: #64748b; font-size: 0.8rem; }
+
+.dropdown-body {
+  padding: 0.5rem 0;
+}
+.dropdown-body a {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.65rem 1rem; color: #334155;
+  text-decoration: none; font-size: 0.9rem; font-weight: 500;
+  transition: background 0.2s;
+}
+.dropdown-body a:hover { background: #f1f5f9; color: #0f172a; }
+.dd-icon { font-size: 1.1rem; width: 20px; text-align: center; }
+
+.dropdown-footer {
+  padding: 0.5rem 0;
+  border-top: 1px solid #f1f5f9;
+}
+.logout-link {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.65rem 1rem; color: #ef4444;
+  text-decoration: none; font-size: 0.9rem; font-weight: 500;
+  transition: background 0.2s;
+}
+.logout-link:hover { background: #fef2f2; }
 
 .btn-nav-ghost {
   color: rgba(248, 250, 252, 0.85) !important;

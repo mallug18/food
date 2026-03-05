@@ -46,6 +46,26 @@
           </div>
 
           <div class="field-wrap">
+            <label>Phone Number</label>
+            <div class="input-group">
+              <span class="input-icon">📞</span>
+              <input v-model="phone" type="tel" placeholder="Your mobile number" required />
+            </div>
+          </div>
+
+          <div class="field-wrap">
+            <label>Profile Picture</label>
+            <div class="file-drop-area" @click="triggerFileInput">
+              <input type="file" ref="fileInput" @change="handleFileChange" accept="image/*" style="display: none;" />
+              <div v-if="!profilePreview" class="upload-placeholder">
+                <span style="font-size: 2rem;">📸</span>
+                <p>Click to upload a picture</p>
+              </div>
+              <img v-else :src="profilePreview" class="profile-preview-img" alt="Profile Preview" />
+            </div>
+          </div>
+
+          <div class="field-wrap">
             <label>Password</label>
             <div class="input-group">
               <span class="input-icon">🔒</span>
@@ -96,16 +116,38 @@
 import { ref, computed } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useAuth } from '../stores/auth';
+import { supabase } from '../supabase';
+import apiClient from '@/api';
 
 const { signUp } = useAuth();
 const router = useRouter();
 const email = ref('');
 const username = ref('');
+const phone = ref('');
 const password = ref('');
 const message = ref('');
 const isLoading = ref(false);
 const isError = ref(false);
 const showPassword = ref(false);
+const fileInput = ref(null);
+const profilePreview = ref(null);
+const profileBase64 = ref(null);
+
+const triggerFileInput = () => {
+  fileInput.value.click();
+};
+
+const handleFileChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    profilePreview.value = e.target.result;
+    profileBase64.value = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
 
 const perks = [
   'Free to join — no credit card needed',
@@ -132,10 +174,36 @@ const handleRegister = async () => {
     isError.value = true;
     return;
   }
+  if (!phone.value || phone.value.length < 10) {
+    message.value = 'Please enter a valid phone number.';
+    isError.value = true;
+    return;
+  }
   isLoading.value = true;
   message.value = '';
   try {
-    await signUp(email.value, password.value, username.value);
+    const sessionData = await signUp(email.value, password.value, username.value);
+    
+    // Check if the auth token is available (depends on how Supabase auto-confirm is set)
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    // If login is successful and session is available, hit the profile API
+    if (session) {
+      const response = await apiClient.post('/api/profile', {
+        phone: phone.value,
+        profile_picture_base64: profileBase64.value
+      }, {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      
+      const { avatar_url } = response.data;
+      if (avatar_url) {
+        await supabase.auth.updateUser({
+          data: { avatar_url }
+        });
+      }
+    }
+    
     router.push({ name: 'dashboard' });
   } catch (error) {
     message.value = error.message;
@@ -208,6 +276,17 @@ const handleRegister = async () => {
 .pw-bars { display: flex; gap: 0.3rem; }
 .pw-bar { width: 44px; height: 4px; background: #e2e8f0; border-radius: 2px; transition: background 0.4s ease; }
 .pw-strength span { font-size: 0.8rem; font-weight: 600; }
+
+.file-drop-area {
+  width: 100%; border: 2px dashed #cbd5e1; border-radius: 12px;
+  padding: 1rem; text-align: center; cursor: pointer;
+  background: #f8fafc; transition: all 0.3s ease;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100px; overflow: hidden;
+}
+.file-drop-area:hover { border-color: #10b981; background: #ecfdf5; }
+.upload-placeholder p { margin: 0.5rem 0 0; color: #64748b; font-size: 0.9rem; }
+.profile-preview-img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #10b981; }
 
 .form-message {
   display: flex; align-items: center; gap: 0.5rem;

@@ -21,6 +21,18 @@ const router = createRouter({
     },
     // ... inside the routes array
     {
+      path: '/requests',
+      name: 'requests',
+      component: () => import('../views/RequestsView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/profile-settings',
+      name: 'profile-settings',
+      component: () => import('../views/ProfileSettingsView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/my-donations',
       name: 'my-donations',
       component: () => import('../views/MyDonationsView.vue'),
