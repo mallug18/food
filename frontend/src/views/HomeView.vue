@@ -33,7 +33,10 @@
           Your small contribution can make a <strong>big difference</strong>.
         </p>
         <div class="hero-actions animate-fade-up delay-500">
-          <RouterLink to="/register" class="btn-primary">
+          <RouterLink v-if="userSession" to="/dashboard" class="btn-primary">
+            🚀 Go to Dashboard
+          </RouterLink>
+          <RouterLink v-else to="/register" class="btn-primary">
             🚀 Join Our Mission
           </RouterLink>
           <a href="#about" @click.prevent="scrollTo('about')" class="btn-outline-white">
@@ -110,7 +113,10 @@
             <h2>Who <span class="gradient-text">We Are</span></h2>
             <p>Founded in Bengaluru, WasteFood is a non-profit initiative leveraging technology to create a network of food donors and recipients.</p>
             <p>We believe that perfectly good food should feed people, not landfills. Our platform makes it easy for individuals, restaurants, and event organizers to donate surplus food safely and efficiently.</p>
-            <RouterLink to="/register" class="btn-primary" style="margin-top:1.5rem; display:inline-flex;">
+            <RouterLink v-if="userSession" to="/dashboard" class="btn-primary" style="margin-top:1.5rem; display:inline-flex;">
+              Start Donating →
+            </RouterLink>
+            <RouterLink v-else to="/register" class="btn-primary" style="margin-top:1.5rem; display:inline-flex;">
               Start Donating →
             </RouterLink>
           </div>
@@ -137,7 +143,8 @@
           <h2>Ready to Make a Difference?</h2>
           <p>Join thousands of donors and recipients across Bengaluru today.</p>
           <div class="cta-actions">
-            <RouterLink to="/register" class="btn-primary">Sign Up Free</RouterLink>
+            <RouterLink v-if="userSession" to="/dashboard" class="btn-primary">Go to Dashboard</RouterLink>
+            <RouterLink v-else to="/register" class="btn-primary">Sign Up Free</RouterLink>
             <div class="cta-contact">
               <p>📧 contact@wastefood.com</p>
               <p>📍 123 Tech Park, Bengaluru, Karnataka</p>
@@ -153,6 +160,9 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import AnimatedCounter from '../components/AnimatedCounter.vue';
+import { supabase } from '../supabase';
+
+const userSession = ref(null);
 
 // Background slideshow
 const backgroundImages = [
@@ -201,6 +211,13 @@ const scrollTo = (id) => {
 };
 
 onMounted(() => {
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    userSession.value = session;
+  });
+  supabase.auth.onAuthStateChange((_event, session) => {
+    userSession.value = session;
+  });
+
   slideInterval = setInterval(() => {
     currentImageIndex.value = (currentImageIndex.value + 1) % backgroundImages.length;
   }, 4000);
