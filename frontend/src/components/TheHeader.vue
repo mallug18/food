@@ -237,7 +237,7 @@ header {
 
 /* Transparent state */
 header:not(.scrolled) {
-  background:rgba(6, 2, 44, 0.347);
+  background:rgba(10, 15, 30, 0.85);
 }
 
 /* Scrolled → glassmorphism */

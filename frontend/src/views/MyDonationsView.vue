@@ -252,11 +252,25 @@ onMounted(() => fetchMyDonations());
 .donation-card.claimed { border-left-color: #6366f1; }
 
 .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem; }
-.card-title-group { display: flex; align-items: flex-start; gap: 0.75rem; }
+.card-title-group { display: flex; align-items: flex-start; gap: 0.75rem; min-width: 0; }
+.card-title-group > div { min-width: 0; flex: 1; }
 .food-emoji-big { font-size: 2rem; flex-shrink: 0; }
-.card-title-group h3 { color: #0f172a; font-size: 1.1rem; margin: 0 0 0.3rem; }
+.card-title-group h3 { 
+  color: #0f172a; 
+  font-size: 1.1rem; 
+  margin: 0 0 0.3rem; 
+  word-wrap: break-word; 
+  overflow-wrap: break-word; 
+  word-break: break-word; 
+}
 .card-meta { display: flex; gap: 1rem; flex-wrap: wrap; }
-.card-meta span { color: #64748b; font-size: 0.85rem; }
+.card-meta span { 
+  color: #64748b; 
+  font-size: 0.85rem; 
+  word-wrap: break-word; 
+  overflow-wrap: break-word; 
+  word-break: break-word; 
+}
 
 .status-badge {
   padding: 0.3rem 0.9rem; border-radius: 9999px;
@@ -301,14 +315,21 @@ onMounted(() => fetchMyDonations());
 .no-requests { color: #94a3b8; font-size: 0.85rem; padding: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem; }
 
 @media (max-width: 768px) {
-  .hero-bar-inner { padding: 6rem 1rem 2rem; }
-  .hero-titles h1 { font-size: 2rem; }
-  .content-wrapper { padding: 2rem 1rem; }
-  .timeline::before { left: 1.25rem; }
-  .timeline-item { gap: 1rem; }
-  .timeline-dot { width: 40px; height: 40px; flex-shrink: 0; margin-left: -5px; }
-  .timeline-content { width: calc(100% - 50px); }
-  .donation-card-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-  .donation-stats { flex-wrap: wrap; }
+  .page-hero { padding: 2rem 1rem; }
+  .page-hero h1 { font-size: 2rem; }
+  .page-content { padding: 2rem 1rem; }
+  
+  .timeline::before { left: 1rem; }
+  .timeline-item { gap: 0.75rem; width: 100%; }
+  .timeline-dot { width: 32px; height: 32px; font-size: 0.9rem; flex-shrink: 0; margin-left: -6px; border-width: 2px; }
+  
+  .donation-card { padding: 1.25rem; width: calc(100% - 35px); overflow: hidden; flex: none; box-sizing: border-box; }
+  .card-header { flex-direction: column; align-items: flex-start; gap: 0.75rem; width: 100%; }
+  .card-title-group { width: 100%; }
+  .card-meta { flex-direction: column; gap: 0.25rem; }
+  
+  .request-pending { flex-direction: column; align-items: flex-start; gap: 1rem; width: 100%; box-sizing: border-box; }
+  .approve-btn { width: 100%; }
+  .request-approved { width: 100%; box-sizing: border-box; }
 }
 </style>

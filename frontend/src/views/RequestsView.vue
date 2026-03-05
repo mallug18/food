@@ -207,9 +207,9 @@ onMounted(() => fetchRequests());
 
 .req-header { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 1.2rem; border-bottom: 1px solid #f1f5f9; }
 .food-emoji { font-size: 2.5rem; }
-.req-food-info { flex: 1; }
-.req-food-info h3 { margin: 0 0 0.25rem 0; font-size: 1.2rem; color: #0f172a; }
-.req-food-info span { color: #64748b; font-size: 0.9rem; }
+.req-food-info { flex: 1; min-width: 0; }
+.req-food-info h3 { margin: 0 0 0.25rem 0; font-size: 1.2rem; color: #0f172a; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
+.req-food-info span { color: #64748b; font-size: 0.9rem; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
 
 .status-badge {
   padding: 0.35rem 1rem; border-radius: 9999px;
@@ -226,8 +226,8 @@ onMounted(() => fetchRequests());
   color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; overflow: hidden;
 }
 .requester-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.requester-info { flex: 1; min-width: 150px; }
-.requester-info strong { display: block; font-size: 1.05rem; color: #1e293b; margin-bottom: 0.1rem; }
+.requester-info { flex: 1; min-width: 0; }
+.requester-info strong { display: block; font-size: 1.05rem; color: #1e293b; margin-bottom: 0.1rem; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
 .requester-info small { color: #64748b; font-size: 0.85rem; }
 
 .requester-phone {
@@ -263,10 +263,12 @@ onMounted(() => fetchRequests());
 .check-icon { background: #10b981; color: white; width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.7rem; }
 
 @media (max-width: 640px) {
-  .req-header { flex-direction: column; align-items: flex-start; }
+  .req-header { flex-direction: column; align-items: flex-start; width: 100%; box-sizing: border-box; }
+  .req-food-info { width: 100%; box-sizing: border-box; }
   .status-badge { margin-top: 0.5rem; }
-  .requester-details { flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .requester-phone { width: 100%; justify-content: center; }
-  .approve-btn { width: 100%; }
+  .requester-details { flex-direction: column; align-items: flex-start; gap: 1rem; width: 100%; box-sizing: border-box; }
+  .requester-info { width: 100%; box-sizing: border-box; }
+  .requester-phone { width: 100%; justify-content: center; box-sizing: border-box; }
+  .approve-btn { width: 100%; box-sizing: border-box; }
 }
 </style>
